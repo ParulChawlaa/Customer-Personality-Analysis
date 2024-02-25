@@ -1,0 +1,214 @@
+# CUSTOMER PERSONALITY ANALYSIS
+
+```{r}
+getwd()
+```
+
+```{r}
+setwd("C:/Users/parul/Desktop/Congno Rise Internship")
+```
+
+1.  Loading the Dataset
+
+```{r}
+customer_analysis<-read.csv("C:/Users/parul/Desktop/Congno Rise Internship/customer_analysis.csv")
+```
+
+```{r}
+customer_analysis
+```
+
+2.  Downloading the packages required
+
+```{r}
+install.packages("ggplot2")
+library("ggplot2")
+```
+
+```{r}
+install.packages("dplyr")
+library("dplyr")
+```
+
+```{r}
+install.packages("tidyr")
+library("tidyr")
+```
+
+```{r}
+install.packages("lubridate")
+library("lubridate")
+```
+
+```{r}
+install.packages("car")
+library("car")
+```
+```{r}
+library("corrplot")
+```
+
+3.  We'll clean the data
+4.  Convert Dt_Customer to Data type for time based analysis
+
+```{r}
+customer_analysis$Dt_Customer<-as.Date(customer_analysis$Dt_Customer)
+```
+
+```{r}
+customer_analysis
+```
+
+5.  Calculate Age from Year_Birth for demographic Analysis
+
+```{r}
+customer_analysis$Age<- as.numeric(format(Sys.Date(),"%Y"))-customer_analysis$Year_Birth
+```
+
+```{r}
+customer_analysis
+```
+
+6.  Impute missing values in the Income column with the median
+
+```{r}
+customer_analysis$Income[is.na(customer_analysis$Income)]<-median(customer_analysis$Income,na.rm = TRUE)
+```
+
+```{r}
+customer_analysis
+```
+
+7.  DATA VISUALISATION
+8.  Age Distribution of Customers
+
+```{r}
+ggplot(customer_analysis,aes(x=Age))+
+  geom_histogram(bins=30,fill="peachpuff",color="thistle")+
+  theme_minimal()+
+  labs(title = "Age Distribution of Customers",x="Age",y="Frequency")
+```
+
+THIS HISTOGRAM SHOWS THAT A RANGE OF CUSTOMERS LIE IN THE AGE GROUP OF 45-55 YEARS.
+
+9.  Income Distribution of Customers
+
+```{r}
+ggplot(customer_analysis,aes(x=Income))+
+  geom_histogram(bins=30,fill="#062C60",color="black")+
+  theme_minimal()+
+  labs(title = "Income Distribution of Customers",x="Income",y="Frequency")+
+
+```
+
+THE GRAPH SHOWS THAT THE MOSTLY CUSTOMERS HAVE A MODERATE INCOME.
+
+10. Education level of Customers
+
+```{r}
+ggplot(customer_analysis)+
+  geom_bar(aes(x=reorder(Education,Education,function(x)-length(x))),
+           fill="#2D5792")+
+  theme_minimal()+
+  labs(title = "Education Level of Customers",x="Education Level",y="Count")+
+  coord_flip()
+```
+
+MOST CUSTOMERS ARE WELL EDUCATED AND HAVE COMPLETED THEIR GRADUATION.
+
+11. Marital Status of Customers
+
+```{r}
+ggplot(customer_analysis)+
+  geom_bar(aes(x=reorder(Marital_Status,Marital_Status,function(x)-length(x))),
+           fill="#9F87E3")+
+  theme_minimal()+
+  labs(title = "Marital Status of Customers",x="Marital Status",y="Count")+
+  coord_flip()
+```
+
+THIS SHOWS THAT MOSTLY CUSTOMERS ARE MARRIED
+
+12. Total spending in Different Categories
+
+```{r}
+customer_analysis$Total_Spending<-rowSums(customer_analysis[,c("MntWines","MntFruits","MntMeatProducts","MntFishProducts","MntSweetProducts","MntGoldProds")])
+```
+
+```{r}
+customer_analysis
+```
+
+```{r}
+hist(customer_analysis$Total_Spending,main = "Total Spending of Customers",xlab = "Total Spending",col="#35063E")
+```
+
+13. Total Spending VS Age
+
+```{r}
+ggplot(customer_analysis,aes(x=Age,y=Total_Spending))+
+  geom_point(aes(color=Marital_Status),alpha=0.6)+
+  theme_minimal()+
+  labs(title = "Total Spending VS Age",x="Age",y="Total Spending")
+```
+
+MARRIED AND SINGLE PEOPLE IN THE AGE GROUP OF 30-75 YEARS SPEND THE MOST
+
+14. Total Spending VS Income
+
+```{r}
+ggplot(customer_analysis,aes(x=Income,y=Total_Spending))+
+  geom_point(aes(color=Education),alpha=0.6)+
+  theme_minimal()+
+  labs(title = "Total Spending VS Income",x="Income",y="Total Spending")
+```
+14. Running a Regression
+```{r}
+regn<-lm(Total_Spending~Income,data=customer_analysis)
+```
+
+```{r}
+regn
+```
+
+```{r}
+summary(regn)
+```
+
+```{r}
+#As Income increases by 1 unit the total spending increases by approx 0.016 units
+#p-value is very small which means that income has a significant effect on total #spending
+```
+15. Total Spending by Education
+```{r}
+ggplot(customer_analysis,aes(x=Total_Spending,y=Education))+
+  geom_boxplot(fill="lightblue")+
+  theme_minimal()+
+  labs(title = "Total Spending by Education Level",x="Total Spending",y="Education")
+```
+HIGHER EDUCATION LEVELS, CORRESPONDS TO HIGHER LEVEL OF SPENDINGS
+
+16. Total Spending by Marital Status
+```{r}
+ggplot(customer_analysis,aes(x=Total_Spending,y=Marital_Status))+
+  geom_boxplot(fill="#C25283")+
+  theme_minimal()+
+  labs(title = "Total Spending by Marital Status",x="Total Spending",y="Marital Status")
+```
+THERE LIES SOME OUTLIERS IN THE CASE OF CUSTOMERS WHO LIVE TOGETHER & WHO ARE MARRIED
+
+17. Corrplot
+```{r}
+numeric_columns<-sapply(customer_analysis,is.numeric)
+```
+
+```{r}
+numeric_columns
+```
+```{r}
+corr_mat<-cor(customer_analysis[,numeric_columns],use="complete.obs")
+```
+```{r}
+corrplot(corr_mat,method = "circle",tl.srt=45,type="upper",tl.cex = 0.5,tl.col = "black")
+```
+
